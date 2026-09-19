@@ -14,3 +14,4 @@ export const notFound = (message = 'Resource not found'): AppError => createAppE
 export const badRequest = (message: string): AppError => createAppError(400, 'BAD_REQUEST', message)
 export const unauthorized = (message = 'Authentication required'): AppError =>
   createAppError(401, 'UNAUTHORIZED', message)
+export const conflict = (code: string, message: string): AppError => createAppError(409, code, message)
