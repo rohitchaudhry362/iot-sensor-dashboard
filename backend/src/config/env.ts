@@ -11,6 +11,8 @@ export interface Env {
   CORS_ORIGIN: string;
   DATABASE_URL: string;
   DATA_DIR: string;
+  MQTT_URL: string;
+  MQTT_CLIENT_ID: string;
   JWT_SECRET: string;
   JWT_ACCESS_TTL_SECONDS: number;
   REFRESH_TOKEN_TTL_DAYS: number;
@@ -28,6 +30,13 @@ const schema = Joi.object<Env>({
     .required()
     .example('postgresql://user:password@localhost:5432/iot_dashboard'),
   DATA_DIR: Joi.string().default(path.resolve(__dirname, '../../../data')).example('/data'),
+  MQTT_URL: Joi.string()
+    .uri({ scheme: ['mqtt', 'mqtts'] })
+    .default('mqtt://localhost:1883')
+    .example('mqtt://mosquitto:1883'),
+  // Fixed, because the broker keeps a persistent session per client id. Two backends with the same id would
+  // replace each other; scaling out needs MQTT shared subscriptions instead.
+  MQTT_CLIENT_ID: Joi.string().min(1).max(64).default('homepulse-backend').example('homepulse-backend'),
   JWT_SECRET: Joi.string().min(32).required().example('replace-with-a-random-string-of-at-least-32-characters'),
   JWT_ACCESS_TTL_SECONDS: Joi.number().integer().min(60).default(900).example(900),
   REFRESH_TOKEN_TTL_DAYS: Joi.number().integer().min(1).max(90).default(7).example(7),
