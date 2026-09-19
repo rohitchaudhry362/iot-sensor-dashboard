@@ -1,6 +1,6 @@
-import { Router } from 'express'
-import { getCurrentUser } from '../../handlers/authHandlers'
+import { Router } from 'express';
+import { getCurrentUser } from '../../handlers/authHandlers';
 
-export const privateAuthRouter = Router()
+export const privateAuthRouter = Router();
 
-privateAuthRouter.get('/me', getCurrentUser)
+privateAuthRouter.get('/me', getCurrentUser);

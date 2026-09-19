@@ -1,19 +1,19 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 export interface RegisterInput {
-  email: string
-  firstName: string
-  lastName: string
-  password: string
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
 }
 
 export interface LoginInput {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 // bcrypt only uses the first 72 bytes of a password, so longer ones are rejected rather than silently truncated.
-const BCRYPT_MAX_BYTES = 72
+const BCRYPT_MAX_BYTES = 72;
 
 const email = Joi.string()
   .trim()
@@ -21,14 +21,14 @@ const email = Joi.string()
   .max(254)
   .email({ tlds: { allow: false } })
   .required()
-  .example('jane.doe@example.com')
+  .example('jane.doe@example.com');
 
 const personName = Joi.string()
   .trim()
   .min(1)
   .max(30)
   .pattern(/^[\p{L}\p{M}' -]+$/u)
-  .required()
+  .required();
 
 const newPassword = Joi.string()
   .min(8)
@@ -38,7 +38,7 @@ const newPassword = Joi.string()
     Buffer.byteLength(value, 'utf8') > BCRYPT_MAX_BYTES ? helpers.error('any.invalid') : value,
   )
   .required()
-  .example('CorrectHorse9')
+  .example('CorrectHorse9');
 
 export const registerSchema = Joi.object<RegisterInput>({
   email,
@@ -50,9 +50,9 @@ export const registerSchema = Joi.object<RegisterInput>({
   firstName: 'Jane',
   lastName: 'Doe',
   password: 'CorrectHorse9',
-})
+});
 
 export const loginSchema = Joi.object<LoginInput>({
   email,
   password: Joi.string().max(BCRYPT_MAX_BYTES).required().example('CorrectHorse9'),
-}).example({ email: 'jane.doe@example.com', password: 'CorrectHorse9' })
+}).example({ email: 'jane.doe@example.com', password: 'CorrectHorse9' });

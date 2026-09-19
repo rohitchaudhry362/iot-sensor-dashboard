@@ -1,21 +1,21 @@
-import dotenv from 'dotenv'
-import Joi from 'joi'
-import path from 'node:path'
+import dotenv from 'dotenv';
+import Joi from 'joi';
+import path from 'node:path';
 
-dotenv.config({ quiet: true })
+dotenv.config({ quiet: true });
 
 export interface Env {
-  NODE_ENV: 'development' | 'production' | 'test'
-  PORT: number
-  LOG_LEVEL: 'error' | 'warn' | 'info' | 'http' | 'debug'
-  CORS_ORIGIN: string
-  DATABASE_URL: string
-  DATA_DIR: string
-  JWT_SECRET: string
-  JWT_ACCESS_TTL_SECONDS: number
-  REFRESH_TOKEN_TTL_DAYS: number
-  BCRYPT_COST: number
-  COOKIE_SECURE: boolean
+  NODE_ENV: 'development' | 'production' | 'test';
+  PORT: number;
+  LOG_LEVEL: 'error' | 'warn' | 'info' | 'http' | 'debug';
+  CORS_ORIGIN: string;
+  DATABASE_URL: string;
+  DATA_DIR: string;
+  JWT_SECRET: string;
+  JWT_ACCESS_TTL_SECONDS: number;
+  REFRESH_TOKEN_TTL_DAYS: number;
+  BCRYPT_COST: number;
+  COOKIE_SECURE: boolean;
 }
 
 const schema = Joi.object<Env>({
@@ -32,18 +32,20 @@ const schema = Joi.object<Env>({
   JWT_ACCESS_TTL_SECONDS: Joi.number().integer().min(60).default(900).example(900),
   REFRESH_TOKEN_TTL_DAYS: Joi.number().integer().min(1).max(90).default(7).example(7),
   BCRYPT_COST: Joi.number().integer().min(4).max(15).default(12).example(12),
-  COOKIE_SECURE: Joi.boolean().example(true).when('NODE_ENV', {
-    is: 'production',
-    then: Joi.boolean().default(true),
-    otherwise: Joi.boolean().default(false),
-  }),
-}).unknown(true)
+  COOKIE_SECURE: Joi.boolean()
+    .example(true)
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.boolean().default(true),
+      otherwise: Joi.boolean().default(false),
+    }),
+}).unknown(true);
 
-const { value, error } = schema.validate(process.env, { abortEarly: false })
+const { value, error } = schema.validate(process.env, { abortEarly: false });
 
 if (error) {
-  process.stderr.write(`Invalid environment configuration: ${error.message}\n`)
-  process.exit(1)
+  process.stderr.write(`Invalid environment configuration: ${error.message}\n`);
+  process.exit(1);
 }
 
-export const env: Env = value as Env
+export const env: Env = value as Env;

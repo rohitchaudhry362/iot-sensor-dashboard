@@ -1,7 +1,7 @@
-import winston from 'winston'
-import { env } from '../config/env'
+import winston from 'winston';
+import { env } from '../config/env';
 
-const isProd = env.NODE_ENV === 'production'
+const isProd = env.NODE_ENV === 'production';
 
 export const logger = winston.createLogger({
   level: env.LOG_LEVEL,
@@ -13,9 +13,9 @@ export const logger = winston.createLogger({
         winston.format.timestamp({ format: 'HH:mm:ss' }),
         winston.format.errors({ stack: true }),
         winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
-          const extra = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : ''
-          return `${timestamp} ${level}: ${stack ?? message}${extra}`
+          const extra = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+          return `${timestamp} ${level}: ${stack ?? message}${extra}`;
         }),
       ),
   transports: [new winston.transports.Console()],
-})
+});
