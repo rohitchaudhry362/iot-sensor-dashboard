@@ -1,8 +1,7 @@
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import { useState } from 'react';
+import { Visibility, VisibilityOff } from '../../icons';
 import { TextField, type TextFieldProps } from './TextField';
 
 export type PasswordFieldProps = Omit<TextFieldProps, 'type'>;
