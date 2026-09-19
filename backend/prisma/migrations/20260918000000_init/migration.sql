@@ -15,6 +15,17 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
+CREATE TABLE "refresh_tokens" (
+    "id" SERIAL NOT NULL,
+    "user_uuid" UUID NOT NULL,
+    "token_hash" CHAR(64) NOT NULL,
+    "expires_at" TIMESTAMPTZ(3) NOT NULL,
+    "revoked_at" TIMESTAMPTZ(3),
+
+    CONSTRAINT "refresh_tokens_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "networks" (
     "id" SERIAL NOT NULL,
     "network_id" INTEGER NOT NULL,
@@ -83,6 +94,9 @@ CREATE TABLE "activities" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "refresh_tokens_token_hash_key" ON "refresh_tokens"("token_hash");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "networks_network_id_key" ON "networks"("network_id");
 
 -- CreateIndex
@@ -104,6 +118,9 @@ CREATE UNIQUE INDEX "sensor_events_sensor_id_metric_id_occurred_at_key" ON "sens
 
 -- CreateIndex
 CREATE UNIQUE INDEX "activities_network_id_time_key" ON "activities"("network_id", "time");
+
+-- AddForeignKey
+ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_uuid_fkey" FOREIGN KEY ("user_uuid") REFERENCES "users"("user_uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "locations" ADD CONSTRAINT "locations_network_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
