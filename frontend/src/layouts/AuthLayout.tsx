@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Box, CheckCircleRounded, Logo, Stack, Typography } from '../components/common';
+import { Box, Logo, Stack, Typography } from '../components/common';
+import { CheckCircleRounded } from '../icons';
 import { APP_TAGLINE } from '../config/app';
 import { colors, layout, radius, space } from '../theme';
 

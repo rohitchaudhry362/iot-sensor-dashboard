@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { AppBar, Avatar, Box, Button, Logo, LogoutRounded, Stack, Toolbar, Typography } from '../components/common';
+import { AppBar, Avatar, Box, Button, Logo, Stack, Toolbar, Typography } from '../components/common';
 import { useAuth } from '../features/auth/AuthContext';
+import { LogoutRounded } from '../icons';
 import { colors, layout } from '../theme';
 
 export const AppLayout = () => {
