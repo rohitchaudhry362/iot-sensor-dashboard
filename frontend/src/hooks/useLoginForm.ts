@@ -1,12 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { isApiError, UNKNOWN_ERROR_MESSAGE } from '../api/errors';
-import { login, type LoginInput } from '../features/auth/api';
-import { useAuth } from '../features/auth/AuthContext';
-import { hasErrors, validateLogin, type FieldErrors } from '../features/auth/validation';
+import { login, type LoginInput } from '../api/auth';
+import { useAuth } from '../context/AuthContext';
+import { hasErrors, validateLogin, type FieldErrors } from '../validation/auth';
 
 export const useLoginForm = () => {
-  const { sessionStarted } = useAuth();
+  const { startSession } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FieldErrors<LoginInput>>({});
@@ -14,7 +14,7 @@ export const useLoginForm = () => {
 
   const mutation = useMutation({
     mutationFn: login,
-    onSuccess: ({ user }) => sessionStarted(user),
+    onSuccess: ({ user }) => startSession(user),
     onError: (err) => setFormError(isApiError(err) ? err.message : UNKNOWN_ERROR_MESSAGE),
   });
 

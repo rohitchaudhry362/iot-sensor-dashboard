@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AppThemeProvider } from './components/common';
-import { AuthProvider } from './features/auth/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { queryClient } from './lib/queryClient';
 
 const container = document.getElementById('root');

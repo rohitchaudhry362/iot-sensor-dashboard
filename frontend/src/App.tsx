@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import { ProtectedRoute, PublicOnlyRoute } from './features/auth/routeGuards';
+import { ProtectedRoute, PublicOnlyRoute } from './util/routeGuards';
 import { AppLayout } from './layouts/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';

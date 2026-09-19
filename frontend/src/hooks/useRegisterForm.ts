@@ -1,12 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { isApiError, UNKNOWN_ERROR_MESSAGE } from '../api/errors';
-import { register, type RegisterInput } from '../features/auth/api';
-import { useAuth } from '../features/auth/AuthContext';
-import { hasErrors, validateRegister, type FieldErrors } from '../features/auth/validation';
+import { register, type RegisterInput } from '../api/auth';
+import { useAuth } from '../context/AuthContext';
+import { hasErrors, validateRegister, type FieldErrors } from '../validation/auth';
 
 export const useRegisterForm = () => {
-  const { sessionStarted } = useAuth();
+  const { startSession } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ export const useRegisterForm = () => {
 
   const mutation = useMutation({
     mutationFn: register,
-    onSuccess: ({ user }) => sessionStarted(user),
+    onSuccess: ({ user }) => startSession(user),
     onError: (err) => {
       if (isApiError(err) && err.code === 'EMAIL_TAKEN') setErrors({ email: err.message });
       else setFormError(isApiError(err) ? err.message : UNKNOWN_ERROR_MESSAGE);

@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import type { LoginInput, RegisterInput } from '../features/auth/api';
-
+import type { LoginInput, RegisterInput } from '../api/auth';
 
 export type FieldErrors<T> = Partial<Record<keyof T, string>>;
 
