@@ -1,0 +1,94 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userUuid     String   @id @default(uuid()) @map("user_uuid") @db.Uuid
+  email        String   @unique @db.VarChar(254)
+  firstName    String   @map("first_name") @db.VarChar(30)
+  lastName     String   @map("last_name") @db.VarChar(30)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("users")
+}
+
+model Network {
+  id         Int        @id @default(autoincrement())
+  networkId  Int        @unique @map("network_id")
+  locations  Location[]
+  activities Activity[]
+
+  @@map("networks")
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  networkId Int      @map("network_id")
+  name      String   @db.VarChar(100)
+  network   Network  @relation(fields: [networkId], references: [id])
+  sensors   Sensor[]
+
+  @@unique([networkId, name])
+  @@map("locations")
+}
+
+model Sensor {
+  id         Int           @id @default(autoincrement())
+  name       String        @unique @db.VarChar(64)
+  locationId Int           @map("location_id")
+  location   Location      @relation(fields: [locationId], references: [id])
+  events     SensorEvent[]
+
+  @@map("sensors")
+}
+
+model Metric {
+  id     Int           @id @default(autoincrement())
+  name   String        @unique @db.VarChar(50)
+  unit   String        @db.VarChar(10)
+  events SensorEvent[]
+
+  @@map("metrics")
+}
+
+model Action {
+  id     Int           @id @default(autoincrement())
+  name   String        @unique @db.VarChar(50)
+  events SensorEvent[]
+
+  @@map("actions")
+}
+
+model SensorEvent {
+  id         Int      @id @default(autoincrement())
+  sensorId   Int      @map("sensor_id")
+  actionId   Int      @map("action_id")
+  metricId   Int?     @map("metric_id")
+  value      Float?
+  occurredAt DateTime @map("occurred_at") @db.Timestamptz(3)
+  sensor     Sensor   @relation(fields: [sensorId], references: [id])
+  action     Action   @relation(fields: [actionId], references: [id])
+  metric     Metric?  @relation(fields: [metricId], references: [id], onDelete: Restrict)
+
+  @@unique([sensorId, metricId, occurredAt])
+  @@map("sensor_events")
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  networkId Int      @map("network_id")
+  time      DateTime @db.Timestamptz(3)
+  activity  Float
+  network   Network  @relation(fields: [networkId], references: [id])
+
+  @@unique([networkId, time])
+  @@map("activities")
+}
