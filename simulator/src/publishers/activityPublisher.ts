@@ -1,5 +1,7 @@
 import type { Logger } from '../lib/logger';
+import { randomInRange } from '../lib/random';
 import { msUntilNextSlot, SLOT_MS, slotStartOf } from '../schedule/quarterHour';
+import { startRecurringTask } from '../schedule/recurring';
 
 // Fires just after the boundary so the clock has certainly crossed it.
 const FIRE_DELAY_MS = 100;
@@ -7,10 +9,6 @@ const FIRE_DELAY_MS = 100;
 // Minutes of motion in one 15-minute bucket, as seen in the sample data (activity.json: minimum 0, maximum 14.83).
 const MIN_ACTIVITY_MINUTES = 0;
 const MAX_ACTIVITY_MINUTES = 14.83;
-
-// A random value in that range, rounded to two decimals like the sample data.
-const randomActivityMinutes = (): number =>
-  Math.round((MIN_ACTIVITY_MINUTES + Math.random() * (MAX_ACTIVITY_MINUTES - MIN_ACTIVITY_MINUTES)) * 100) / 100;
 
 export interface ActivityPublisherOptions {
   networkId: number;
@@ -24,27 +22,15 @@ export interface ActivityPublisherOptions {
 // subscriber does not wait up to 15 minutes for the first message.
 export const startActivityPublisher = ({ networkId, publish, logger }: ActivityPublisherOptions): (() => void) => {
   const topic = `network/${networkId}/activity`;
-  let nextPublishTimer: NodeJS.Timeout | undefined;
 
-  const publishFinishedBucket = (): void => {
-    const bucketStart = new Date(slotStartOf(Date.now()) - SLOT_MS).toISOString();
-    const activity = randomActivityMinutes();
-    publish(topic, JSON.stringify({ time: bucketStart, activity }));
-    logger.info(`Published activity bucket ${bucketStart} = ${activity} minutes of motion`);
-  };
-
-  const scheduleNextPublish = (): void => {
-    nextPublishTimer = setTimeout(
-      () => {
-        publishFinishedBucket();
-        scheduleNextPublish();
-      },
-      msUntilNextSlot(Date.now()) + FIRE_DELAY_MS,
-    );
-  };
-
-  publishFinishedBucket();
-  scheduleNextPublish();
-
-  return () => clearTimeout(nextPublishTimer);
+  return startRecurringTask({
+    task: () => {
+      const bucketStart = new Date(slotStartOf(Date.now()) - SLOT_MS).toISOString();
+      const activity = randomInRange(MIN_ACTIVITY_MINUTES, MAX_ACTIVITY_MINUTES, 2);
+      publish(topic, JSON.stringify({ time: bucketStart, activity }));
+      logger.info(`Published activity bucket ${bucketStart} = ${activity} minutes of motion`);
+    },
+    nextDelayMs: () => msUntilNextSlot(Date.now()) + FIRE_DELAY_MS,
+    runImmediately: true,
+  });
 };
