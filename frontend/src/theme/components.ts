@@ -121,6 +121,18 @@ export const components: Components<Omit<Theme, 'components'>> = {
       },
     },
   },
+  MuiSnackbarContent: {
+    styleOverrides: {
+      root: {
+        backgroundColor: colors.brand[700],
+        color: colors.white,
+        borderRadius: radius.small,
+        boxShadow: elevation.raised,
+        fontWeight: fontWeight.medium,
+        minWidth: 'auto',
+      },
+    },
+  },
   MuiLink: {
     defaultProps: { underline: 'hover' },
     styleOverrides: {

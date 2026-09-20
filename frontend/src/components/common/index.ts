@@ -11,6 +11,7 @@ export { PageLoader } from './PageLoader';
 export { PasswordField, type PasswordFieldProps } from './PasswordField';
 export { ProgressBar, type ProgressBarProps } from './ProgressBar';
 export { Skeleton, type SkeletonProps } from './Skeleton';
+export { Snackbar, type SnackbarProps } from './Snackbar';
 export { Stack, type StackProps } from './Stack';
 export { TextField, type TextFieldProps } from './TextField';
 export { Toolbar, type ToolbarProps } from './Toolbar';

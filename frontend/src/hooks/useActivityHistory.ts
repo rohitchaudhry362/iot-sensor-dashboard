@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { ACTIVITY_WINDOW_HOURS, fetchActivity } from '../api/dashboard';
 import { useLiveData, type ActivityPoint } from '../context/LiveDataContext';
 
-
 const MAX_POINTS = ACTIVITY_WINDOW_HOURS * 4;
 
 const withPoint = (history: ActivityPoint[], point: ActivityPoint): ActivityPoint[] =>
