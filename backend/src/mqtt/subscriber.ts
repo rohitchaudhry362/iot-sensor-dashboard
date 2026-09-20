@@ -1,8 +1,10 @@
 import mqtt from 'mqtt';
 import { env } from '../config/env';
 import { logger } from '../lib/logger';
-import { handleActivityMessage } from './activityMessageHandler';
-import { ACTIVITY_TOPIC_FILTER } from './topics';
+import { routeMessage } from './messageRouter';
+import { ACTIVITY_TOPIC_FILTER, SENSOR_EVENT_TOPIC_FILTER } from './topics';
+
+const TOPIC_FILTERS = [ACTIVITY_TOPIC_FILTER, SENSOR_EVENT_TOPIC_FILTER];
 
 export interface MqttSubscriber {
   stop: () => Promise<void>;
@@ -23,9 +25,9 @@ export const startMqttSubscriber = (): MqttSubscriber => {
     logger.info(`Connected to MQTT broker ${env.MQTT_URL} as ${env.MQTT_CLIENT_ID}`, {
       sessionPresent: connectionAcknowledgement.sessionPresent,
     });
-    client.subscribe(ACTIVITY_TOPIC_FILTER, { qos: 1 }, (err) => {
-      if (err) logger.error(`Subscribing to ${ACTIVITY_TOPIC_FILTER} failed`, { err });
-      else logger.info(`Subscribed to ${ACTIVITY_TOPIC_FILTER}`);
+    client.subscribe(TOPIC_FILTERS, { qos: 1 }, (err) => {
+      if (err) logger.error(`Subscribing to ${TOPIC_FILTERS.join(', ')} failed`, { err });
+      else logger.info(`Subscribed to ${TOPIC_FILTERS.join(', ')}`);
     });
   });
   client.on('reconnect', () => logger.warn('Reconnecting to MQTT broker'));
@@ -33,7 +35,7 @@ export const startMqttSubscriber = (): MqttSubscriber => {
   client.on('error', (err) => logger.error('MQTT connection error', { err }));
 
   client.on('message', (topic, payload) => {
-    handleActivityMessage(topic, payload).catch((err: unknown) =>
+    routeMessage(topic, payload).catch((err: unknown) =>
       logger.error(`Failed to process message on ${topic}`, { err }),
     );
   });
