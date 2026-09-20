@@ -17,7 +17,6 @@ const scheduledTiming = (occurredAt: string, now: number, staleAfterMs?: number)
   isStale: isStale(occurredAt, now, staleAfterMs),
 });
 
-
 export const LiveStats = () => {
   const { temperature, humidity, door, activity, isLoading, isError } = useLiveData();
   const now = useNow();
@@ -67,7 +66,7 @@ export const LiveStats = () => {
       iconBackgroundColor: colors.brand[700],
       headline: activity ? `${activity.minutes} of ${ACTIVITY_BUCKET_MINUTES} min` : '--',
       interpretation: activity ? describeActivity(activity.minutes) : undefined,
-      timing: activity ? scheduledTiming(activity.bucketStart, now, ACTIVITY_STALE_AFTER_MS) : undefined,
+      timing: activity ? scheduledTiming(activity.time, now, ACTIVITY_STALE_AFTER_MS) : undefined,
       children: activity ? (
         <ProgressBar
           percent={(activity.minutes / ACTIVITY_BUCKET_MINUTES) * 100}

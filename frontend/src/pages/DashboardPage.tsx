@@ -1,4 +1,5 @@
 import { Box, Stack, Typography } from '../components/common';
+import { ActivityChart } from '../components/dashboard/ActivityChart';
 import { LiveStats } from '../components/dashboard/LiveStats';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,6 +16,7 @@ export const DashboardPage = () => {
       </Box>
 
       <LiveStats />
+      <ActivityChart />
     </Stack>
   );
 };

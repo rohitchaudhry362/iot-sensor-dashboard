@@ -34,16 +34,16 @@ export interface Detection {
   location: string;
 }
 
-export interface ActivityLevel {
+export interface ActivityPoint {
+  time: string;
   minutes: number;
-  bucketStart: string;
 }
 
 export interface LiveDataValue {
   temperature: Measurement | null;
   humidity: Measurement | null;
   door: Detection | null;
-  activity: ActivityLevel | null;
+  activity: ActivityPoint | null;
   isLoading: boolean;
   isError: boolean;
 }
@@ -75,9 +75,9 @@ const detectionFromSnapshot = (readings: LatestReading[]): DetectionState | null
 };
 
 // Buckets arrive oldest first, for charting, so the newest is the last one.
-const activityFromSnapshot = (buckets: ActivityBucket[]): ActivityLevel | null => {
+const activityFromSnapshot = (buckets: ActivityBucket[]): ActivityPoint | null => {
   const latest = buckets[buckets.length - 1];
-  return latest ? { minutes: latest.activity, bucketStart: latest.time } : null;
+  return latest ? { time: latest.time, minutes: latest.activity } : null;
 };
 
 // Holds the four values the dashboard shows. Each is filled once from the REST snapshot when the app loads,
@@ -98,7 +98,7 @@ export const LiveDataProvider = ({ children }: { children: ReactNode }) => {
   const [temperature, setTemperature] = useState<MeasurementState | null>(null);
   const [humidity, setHumidity] = useState<MeasurementState | null>(null);
   const [door, setDoor] = useState<DetectionState | null>(null);
-  const [activity, setActivity] = useState<ActivityLevel | null>(null);
+  const [activity, setActivity] = useState<ActivityPoint | null>(null);
 
   const readings = readingsQuery.data?.readings;
   const buckets = activityQuery.data?.buckets;
@@ -133,7 +133,7 @@ export const LiveDataProvider = ({ children }: { children: ReactNode }) => {
         else if (event.metricName === HUMIDITY) setHumidity(reading);
       },
       onSensorDetected: (event) => setDoor({ occurredAt: event.occurredAt, sensorName: event.sensorName }),
-      onActivityUpdate: (event) => setActivity({ minutes: event.activity, bucketStart: event.time }),
+      onActivityUpdate: (event) => setActivity({ time: event.time, minutes: event.activity }),
     });
   }, [isAuthenticated]);
 
