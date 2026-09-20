@@ -5,6 +5,7 @@ export { Avatar, type AvatarProps } from './Avatar';
 export { Box, type BoxProps } from './Box';
 export { Button, type ButtonProps } from './Button';
 export { Card, type CardProps } from './Card';
+export { Chip, type ChipProps } from './Chip';
 export { Link, type LinkProps } from './Link';
 export { Logo, LogoMark } from './Logo';
 export { PageLoader } from './PageLoader';
