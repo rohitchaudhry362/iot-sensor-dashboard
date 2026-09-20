@@ -7,22 +7,22 @@ interface RedirectState {
 }
 
 export const ProtectedRoute = () => {
-  const { state } = useAuth();
+  const { state: authState } = useAuth();
   const location = useLocation();
 
-  if (state.status === 'loading') return <PageLoader label="Checking your session" />;
-  if (state.status === 'unauthenticated') {
+  if (authState.status === 'loading') return <PageLoader label="Checking your session" />;
+  if (authState.status === 'unauthenticated') {
     return <Navigate to="/login" replace state={{ from: location } satisfies RedirectState} />;
   }
   return <Outlet />;
 };
 
 export const PublicOnlyRoute = () => {
-  const { state } = useAuth();
+  const { state: authState } = useAuth();
   const location = useLocation();
 
-  if (state.status === 'loading') return <PageLoader label="Checking your session" />;
-  if (state.status === 'authenticated') {
+  if (authState.status === 'loading') return <PageLoader label="Checking your session" />;
+  if (authState.status === 'authenticated') {
     const from = (location.state as RedirectState | null)?.from;
     return <Navigate to={from ? `${from.pathname}${from.search}${from.hash}` : '/'} replace />;
   }

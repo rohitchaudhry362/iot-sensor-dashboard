@@ -3,12 +3,12 @@ import { useAuth } from '../context/AuthContext';
 
 // Placeholder until the live dashboard is built.
 export const DashboardPage = () => {
-  const { state } = useAuth();
+  const { state: authState } = useAuth();
 
   return (
     <Stack spacing={3}>
       <Typography variant="h3" component="h1">
-        Hello, {state.user?.firstName}
+        Hello, {authState.user?.firstName}
       </Typography>
       <Card>
         <Typography color="text.secondary">
