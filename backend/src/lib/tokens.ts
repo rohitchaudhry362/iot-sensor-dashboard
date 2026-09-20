@@ -4,6 +4,7 @@ import { env } from '../config/env';
 
 export interface AccessTokenClaims {
   userUuid: string;
+  expiresAt: number;
 }
 
 export const signAccessToken = (userUuid: string): string =>
@@ -12,8 +13,10 @@ export const signAccessToken = (userUuid: string): string =>
 export const verifyAccessToken = (token: string): AccessTokenClaims | null => {
   try {
     const payload = jwt.verify(token, env.JWT_SECRET, { algorithms: ['HS256'] });
-    if (typeof payload === 'string' || typeof payload.userUuid !== 'string') return null;
-    return { userUuid: payload.userUuid };
+    if (typeof payload === 'string' || typeof payload.userUuid !== 'string' || typeof payload.exp !== 'number') {
+      return null;
+    }
+    return { userUuid: payload.userUuid, expiresAt: payload.exp };
   } catch {
     return null;
   }

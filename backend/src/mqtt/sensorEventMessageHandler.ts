@@ -1,4 +1,5 @@
 import { logger } from '../lib/logger';
+import { broadcastSensorDetected, broadcastSensorUpdate } from '../realtime/broadcast';
 import { recordSensorEvent, type Measurement, type SensorIngestOutcome } from '../services/ingestService';
 import { sensorEventMessageSchema, type SensorPayload } from '../validation/mqttSchemas';
 import { parseMessageBody } from './messageBody';
@@ -38,7 +39,20 @@ export const handleSensorEventMessage = async (
   // The unit is left out of the log line: it is free text from the device and only checked against the metric.
   const reading = measurement ? `, ${measurement.metricName} = ${measurement.value}` : '';
   const description = `${actionName} from ${sensorName} (network ${networkId}) at ${occurredAt.toISOString()}${reading}`;
-  if (outcome === 'stored') logger.info(`Stored sensor event: ${description}`);
-  else if (outcome === 'duplicate') logger.info(`Ignored duplicate sensor event: ${description}`);
-  else logger.warn(`Dropped sensor event: ${DROP_REASONS[outcome]}: ${description}`);
+  if (outcome === 'stored') {
+    // Only a stored row is broadcast: a duplicate or a dropped message tells the browser nothing new.
+    // The unit is the metric's own, since a message whose unit differed was rejected before it got here.
+    const occurredAtIso = occurredAt.toISOString();
+    if (measurement) {
+      const { metricName, unit, value } = measurement;
+      broadcastSensorUpdate({ networkId, sensorName, metricName, unit, value, occurredAt: occurredAtIso });
+    } else {
+      broadcastSensorDetected({ networkId, sensorName, occurredAt: occurredAtIso });
+    }
+    logger.info(`Stored sensor event: ${description}`);
+  } else if (outcome === 'duplicate') {
+    logger.info(`Ignored duplicate sensor event: ${description}`);
+  } else {
+    logger.warn(`Dropped sensor event: ${DROP_REASONS[outcome]}: ${description}`);
+  }
 };
