@@ -17,6 +17,9 @@ export const setAccessToken = (token: string | null): void => {
   accessToken = token;
 };
 
+// The socket needs the current token for its handshake; it is never written anywhere but memory.
+export const getAccessToken = (): string | null => accessToken;
+
 export const onSessionExpired = (listener: (() => void) | null): void => {
   sessionExpiredListener = listener;
 };
@@ -38,11 +41,24 @@ const send = async (path: string, method: HttpMethod, body: unknown, token: stri
   }
 };
 
+let refreshInFlight: Promise<AuthResponse> | null = null;
+
 // Asks the server for a new access token using the refresh cookie, and remembers it.
+//
+// Callers share one request on purpose. A refresh token is single-use and presenting a spent one revokes every
+// session the user has, so two callers refreshing at once would sign them out. That became likely once the
+// socket joined in: the server drops it exactly when the token expires, which is the same moment any pending
+// request gets its 401.
 export const refreshSession = async (): Promise<AuthResponse> => {
-  const result = await apiRequest<AuthResponse>('/api/auth/refresh', { method: 'POST', auth: false });
-  setAccessToken(result.accessToken);
-  return result;
+  refreshInFlight ??= apiRequest<AuthResponse>('/api/auth/refresh', { method: 'POST', auth: false })
+    .then((result) => {
+      setAccessToken(result.accessToken);
+      return result;
+    })
+    .finally(() => {
+      refreshInFlight = null;
+    });
+  return refreshInFlight;
 };
 
 export const apiRequest = async <T>(
