@@ -27,6 +27,19 @@ export interface LatestReading {
   occurredAt: string;
 }
 
+export interface SensorReading {
+  metricName: string;
+  unit: string;
+  value: number;
+  occurredAt: string;
+}
+
+export interface SensorReadingsResponse {
+  from: string;
+  to: string;
+  readings: SensorReading[];
+}
+
 export interface ActivityBucket {
   networkId: number;
   time: string;

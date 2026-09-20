@@ -2,6 +2,7 @@ import { Box, Stack, Typography } from '../components/common';
 import { ActivityChart } from '../components/dashboard/ActivityChart';
 import { LiveStats } from '../components/dashboard/LiveStats';
 import { LiveUpdateToast } from '../components/dashboard/LiveUpdateToast';
+import { SensorHistoryChart } from '../components/dashboard/SensorHistoryChart';
 import { useAuth } from '../context/AuthContext';
 
 export const DashboardPage = () => {
@@ -17,6 +18,7 @@ export const DashboardPage = () => {
       </Box>
 
       <LiveStats />
+      <SensorHistoryChart />
       <ActivityChart />
       <LiveUpdateToast />
     </Stack>

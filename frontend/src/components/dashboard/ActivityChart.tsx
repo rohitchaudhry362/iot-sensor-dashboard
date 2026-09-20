@@ -2,32 +2,11 @@ import { Area, AreaChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip
 import { ACTIVITY_WINDOW_HOURS } from '../../api/dashboard';
 import { useActivityHistory } from '../../hooks/useActivityHistory';
 import { colors, fontFamily } from '../../theme';
+import { clockTime, roundTicks } from '../../util/chartAxis';
 import { Alert, Box, Card, Skeleton, Stack, Typography } from '../common';
 
 const BUCKET_MINUTES = 15;
 const CHART_HEIGHT = 220;
-const MINUTE_MS = 60 * 1000;
-const HOUR_MS = 60 * MINUTE_MS;
-
-const clockTime = (epochMs: number): string =>
-  new Date(epochMs).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-
-// Ticks land on round clock times rather than on whichever reading happens to be first, and the step widens
-// with the span so the labels never collide.
-const tickStepMs = (spanMs: number): number => {
-  const spanHours = spanMs / HOUR_MS;
-  if (spanHours <= 3) return 30 * MINUTE_MS;
-  if (spanHours <= 8) return HOUR_MS;
-  if (spanHours <= 16) return 2 * HOUR_MS;
-  return 3 * HOUR_MS;
-};
-
-const roundTicks = (from: number, to: number): number[] => {
-  const step = tickStepMs(to - from);
-  const ticks: number[] = [];
-  for (let tick = Math.ceil(from / step) * step; tick <= to; tick += step) ticks.push(tick);
-  return ticks;
-};
 
 export const ActivityChart = () => {
   const { points: history, isLoading, isError } = useActivityHistory();
