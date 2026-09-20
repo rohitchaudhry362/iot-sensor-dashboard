@@ -15,8 +15,6 @@ export const activityMessageSchema = Joi.object<ActivityMessage>({
 // Action and metric names are letters, digits and underscores only (at most 50), so they are safe to put in a log line.
 const NAME_PATTERN = /^\w{1,50}$/;
 
-// A device that only signals an event (a door) sends an empty payload. length(0) rather than an empty key list,
-// because with stripUnknown an empty key list would accept any payload by stripping all of its keys.
 const eventOnlyPayloadSchema = Joi.object().length(0);
 
 // A device that measures something sends exactly one measurement and its unit: two keys, one of them "unit".
