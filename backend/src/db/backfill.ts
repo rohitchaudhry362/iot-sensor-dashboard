@@ -29,21 +29,53 @@ const insertInBatches = async <Row>(rows: Row[], insert: (batch: Row[]) => Promi
   }
 };
 
-const backfillActivity = async (tx: Prisma.TransactionClient, now: Date): Promise<number> => {
-  const newest = await tx.activity.findFirst({ orderBy: { time: 'desc' }, select: { time: true, networkId: true } });
-  if (!newest) return 0;
+// A stretch with no rows in it, between two that exist. `until` is exclusive: the row at that instant is
+// already there.
+interface Hole {
+  fromMs: number;
+  untilMs: number;
+}
 
+// Every quarter hour strictly inside the hole.
+const quarterHoursIn = ({ fromMs, untilMs }: Hole): number[] => {
+  const times: number[] = [];
+  for (let time = fromMs + QUARTER_HOUR_MS; time < untilMs; time += QUARTER_HOUR_MS) times.push(time);
+  return times;
+};
+
+const backfillActivity = async (tx: Prisma.TransactionClient, now: Date): Promise<number> => {
   const [range] = await tx.$queryRaw<ValueRange[]>`
     SELECT min(activity) AS "min", max(activity) AS "max", max(scale(activity::numeric))::int AS "decimals"
     FROM activities`;
+  if (range.min === null) return 0;
+
+  // Holes in the middle of the series, not only the one at the end. A run of the simulator can push the
+  // newest row past an earlier outage, and looking only at the newest row would then report nothing to do
+  // while a month sat missing in between.
+  const holes = await tx.$queryRaw<{ networkId: number; fromMs: Date; untilMs: Date }[]>`
+    SELECT network_id AS "networkId", "time" AS "fromMs", next_time AS "untilMs"
+    FROM (
+      SELECT network_id, "time", lead("time") OVER (PARTITION BY network_id ORDER BY "time") AS next_time
+      FROM activities
+    ) windowed
+    WHERE next_time - "time" > interval '15 minutes'`;
 
   // The bucket covering this moment has not finished yet, so the newest one worth writing is the one before it.
   const lastCompleteBucket = Math.floor(now.getTime() / QUARTER_HOUR_MS) * QUARTER_HOUR_MS - QUARTER_HOUR_MS;
+  const newestPerNetwork = await tx.$queryRaw<{ networkId: number; newest: Date }[]>`
+    SELECT network_id AS "networkId", max("time") AS "newest" FROM activities GROUP BY network_id`;
 
   const buckets: Prisma.ActivityCreateManyInput[] = [];
-  for (let time = newest.time.getTime() + QUARTER_HOUR_MS; time <= lastCompleteBucket; time += QUARTER_HOUR_MS) {
-    buckets.push({ networkId: newest.networkId, time: new Date(time), activity: randomInRange(range) });
-  }
+  const add = (networkId: number, times: number[]): void => {
+    times.forEach((time) => buckets.push({ networkId, time: new Date(time), activity: randomInRange(range) }));
+  };
+  holes.forEach(({ networkId, fromMs, untilMs }) =>
+    add(networkId, quarterHoursIn({ fromMs: fromMs.getTime(), untilMs: untilMs.getTime() })),
+  );
+  newestPerNetwork.forEach(({ networkId, newest }) =>
+    // +1 so the end of the series is treated like any other hole: fill strictly between newest and the edge.
+    add(networkId, quarterHoursIn({ fromMs: newest.getTime(), untilMs: lastCompleteBucket + 1 })),
+  );
 
   await insertInBatches(buckets, (batch) => tx.activity.createMany({ data: batch, skipDuplicates: true }));
   return buckets.length;
@@ -79,7 +111,32 @@ const backfillSensorEvents = async (tx: Prisma.TransactionClient, now: Date): Pr
   `;
   const rangeByMetric = new Map(ranges.map((range) => [range.metricId, range]));
 
+  // Holes inside each measuring series, found the same way as for activity. The threshold is two missed
+  // readings rather than one, so ordinary jitter in the sample data is not mistaken for an outage.
+  // Detection-only series are left out on purpose: a door that did not move leaves a gap by definition, and
+  // filling it would be inventing events to paper over silence that was real.
+  const holes = await tx.$queryRaw<{ sensorId: number; metricId: number; fromMs: Date; untilMs: Date }[]>`
+    SELECT sensor_id AS "sensorId", metric_id AS "metricId", occurred_at AS "fromMs", next_at AS "untilMs"
+    FROM (
+      SELECT sensor_id, metric_id, occurred_at,
+             lead(occurred_at) OVER (PARTITION BY sensor_id, metric_id ORDER BY occurred_at) AS next_at
+      FROM sensor_events
+      WHERE metric_id IS NOT NULL
+    ) windowed
+    WHERE next_at - occurred_at > interval '30 minutes'`;
+
   const events: Prisma.SensorEventCreateManyInput[] = [];
+  const actionForSeries = new Map(series.map((one) => [`${one.sensorId}|${String(one.metricId)}`, one.actionId]));
+
+  holes.forEach(({ sensorId, metricId, fromMs, untilMs }) => {
+    const range = rangeByMetric.get(metricId);
+    const actionId = actionForSeries.get(`${sensorId}|${String(metricId)}`);
+    if (!range || actionId === undefined) return;
+    quarterHoursIn({ fromMs: fromMs.getTime(), untilMs: untilMs.getTime() }).forEach((time) => {
+      events.push({ sensorId, actionId, metricId, value: randomInRange(range), occurredAt: new Date(time) });
+    });
+  });
+
   series.forEach(({ sensorId, actionId, metricId, lastOccurredAt }) => {
     if (metricId === null) {
       let time = lastOccurredAt.getTime() + randomDetectionGapMs();
