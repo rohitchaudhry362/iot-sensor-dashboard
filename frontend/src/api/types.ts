@@ -11,11 +11,17 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface SensorMetric {
+  name: string;
+  unit: string;
+}
+
 export interface Sensor {
   id: number;
   name: string;
   location: string;
   networkId: number;
+  metrics: SensorMetric[];
 }
 
 export interface LatestReading {
