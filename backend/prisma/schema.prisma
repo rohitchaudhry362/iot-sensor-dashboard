@@ -9,16 +9,13 @@ datasource db {
 }
 
 model User {
-  userUuid     String   @id @default(uuid()) @map("user_uuid") @db.Uuid
-  email        String   @unique @db.VarChar(254)
-  firstName    String   @map("first_name") @db.VarChar(30)
-  lastName     String   @map("last_name") @db.VarChar(30)
-  passwordHash String   @map("password_hash") @db.VarChar(255)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  networkId    Int      @map("network_id")
-  network      Network  @relation(fields: [networkId], references: [id], onDelete: Restrict)
-
+  userUuid      String         @id @default(uuid()) @map("user_uuid") @db.Uuid
+  email         String         @unique @db.VarChar(254)
+  firstName     String         @map("first_name") @db.VarChar(30)
+  lastName      String         @map("last_name") @db.VarChar(30)
+  passwordHash  String         @map("password_hash") @db.VarChar(255)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
   refreshTokens RefreshToken[]
 
   @@map("users")
@@ -40,7 +37,6 @@ model Network {
   networkId  Int        @unique @map("network_id")
   locations  Location[]
   activities Activity[]
-  users      User[]
 
   @@map("networks")
 }
