@@ -4,6 +4,7 @@ import path from 'node:path';
 import { env } from '../config/env';
 import { logger } from '../lib/logger';
 import { prisma } from '../lib/prisma';
+import { backfillToNow } from './backfill';
 import { parseActivity, parseSensorEvent, type ActivityRow, type SensorEventRow } from './seedParsers';
 
 const BATCH_SIZE = 5000;
@@ -129,16 +130,22 @@ const main = async (): Promise<void> => {
   const buckets = activityCount === 0 ? (await readJsonArray('activity.json', 'activity')).map(parseActivity) : [];
 
   if (events.length === 0 && buckets.length === 0) {
-    logger.info('Database already seeded, skipping');
-    return;
+    logger.info('Sample files already loaded, skipping them');
+  } else {
+    // One transaction: a failed seed rolls back completely instead of leaving partial data behind.
+    await prisma.$transaction(async (tx) => {
+      const networkIds = await seedNetworks(tx, [
+        ...events.map((e) => e.networkId),
+        ...buckets.map((b) => b.networkId),
+      ]);
+      if (events.length > 0) await seedSensorEvents(tx, events, networkIds);
+      if (buckets.length > 0) await seedActivities(tx, buckets, networkIds);
+    }, TRANSACTION_OPTIONS);
   }
 
-  // One transaction: a failed seed rolls back completely instead of leaving partial data behind.
-  await prisma.$transaction(async (tx) => {
-    const networkIds = await seedNetworks(tx, [...events.map((e) => e.networkId), ...buckets.map((b) => b.networkId)]);
-    if (events.length > 0) await seedSensorEvents(tx, events, networkIds);
-    if (buckets.length > 0) await seedActivities(tx, buckets, networkIds);
-  }, TRANSACTION_OPTIONS);
+  // Runs every time, not only on a first seed: the files stop months in the past, so without this a fresh
+  // clone shows an empty chart until the simulator has been publishing for a day.
+  await prisma.$transaction((tx) => backfillToNow(tx, new Date()), TRANSACTION_OPTIONS);
 };
 
 main()
