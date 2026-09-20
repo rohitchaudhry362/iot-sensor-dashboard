@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AppBar, Avatar, Box, Button, Logo, Stack, Toolbar, Typography } from '../components/common';
-import { ConnectionStatus } from '../components/ConnectionStatus';
 import { useAuth } from '../context/AuthContext';
 import { LogoutRounded } from '../icons';
 import { colors, layout } from '../theme';
@@ -22,7 +21,6 @@ export const AppLayout = () => {
         <Toolbar sx={{ minHeight: layout.headerHeight, px: layout.pagePaddingX, gap: 2 }}>
           <Logo size="small" />
           <Box sx={{ flexGrow: 1 }} />
-          <ConnectionStatus />
           {user && (
             <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
               <Avatar
