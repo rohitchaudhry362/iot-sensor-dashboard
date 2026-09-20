@@ -21,7 +21,7 @@ const MAX_HUMIDITY_PERCENT = 89;
 const BATHROOM_REPORT_INTERVAL_MS = 15 * MINUTE_MS;
 
 // Door events are irregular in the sample data (about 13 a day, in bursts). Here they come after a random gap of
-// 1 to 30 minutes, which is much more often than in the data so that a demo shows them.
+// 1 to 30 minutes.
 const MIN_DOOR_EVENT_DELAY_MS = 1 * MINUTE_MS;
 const MAX_DOOR_EVENT_DELAY_MS = 30 * MINUTE_MS;
 
