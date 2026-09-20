@@ -10,3 +10,39 @@ export interface AuthResponse {
   accessToken: string;
   user: User;
 }
+
+export interface Sensor {
+  id: number;
+  name: string;
+  location: string;
+  networkId: number;
+}
+
+export interface LatestReading {
+  sensorId: number;
+  sensorName: string;
+  metricName: string | null;
+  unit: string | null;
+  value: number | null;
+  occurredAt: string;
+}
+
+export interface ActivityBucket {
+  networkId: number;
+  time: string;
+  activity: number;
+}
+
+export interface SensorsResponse {
+  sensors: Sensor[];
+}
+
+export interface LatestReadingsResponse {
+  readings: LatestReading[];
+}
+
+export interface ActivityResponse {
+  from: string;
+  to: string;
+  buckets: ActivityBucket[];
+}

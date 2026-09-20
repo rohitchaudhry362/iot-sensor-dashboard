@@ -1,4 +1,8 @@
 export { default as CheckCircleRounded } from '@mui/icons-material/CheckCircleRounded';
+export { default as DirectionsRunRounded } from '@mui/icons-material/DirectionsRunRounded';
+export { default as DoorFrontRounded } from '@mui/icons-material/DoorFrontRounded';
 export { default as LogoutRounded } from '@mui/icons-material/LogoutRounded';
+export { default as ThermostatRounded } from '@mui/icons-material/ThermostatRounded';
 export { default as Visibility } from '@mui/icons-material/Visibility';
 export { default as VisibilityOff } from '@mui/icons-material/VisibilityOff';
+export { default as WaterDropRounded } from '@mui/icons-material/WaterDropRounded';

@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AppThemeProvider } from './components/common';
 import { AuthProvider } from './context/AuthContext';
+import { LiveDataProvider } from './context/LiveDataContext';
 import { queryClient } from './lib/queryClient';
 
 const container = document.getElementById('root');
@@ -19,7 +20,9 @@ ReactDOM.createRoot(container).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <App />
+            <LiveDataProvider>
+              <App />
+            </LiveDataProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
