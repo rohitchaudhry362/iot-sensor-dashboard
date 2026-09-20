@@ -30,6 +30,47 @@ export interface LatestReading {
   occurredAt: Date;
 }
 
+export interface SensorReading {
+  metricName: string;
+  unit: string;
+  value: number;
+  occurredAt: Date;
+}
+
+export interface ReadingHistoryQuery {
+  sensorId: number;
+  from: Date;
+  to: Date;
+  metricName?: string;
+}
+
+export const findSensorReadings = async ({
+  sensorId,
+  from,
+  to,
+  metricName,
+}: ReadingHistoryQuery): Promise<SensorReading[]> => {
+  const rows = await prisma.sensorEvent.findMany({
+    where: {
+      sensorId,
+      occurredAt: { gte: from, lt: to },
+      metricId: { not: null },
+      ...(metricName && { metric: { name: metricName } }),
+    },
+    select: { value: true, occurredAt: true, metric: { select: { name: true, unit: true } } },
+    orderBy: { occurredAt: 'asc' },
+  });
+
+  return rows.flatMap((row) =>
+    row.metric && row.value !== null
+      ? [{ metricName: row.metric.name, unit: row.metric.unit, value: row.value, occurredAt: row.occurredAt }]
+      : [],
+  );
+};
+
+export const sensorExists = async (sensorId: number): Promise<boolean> =>
+  (await prisma.sensor.count({ where: { id: sensorId } })) > 0;
+
 export const findLatestReadings = async (): Promise<LatestReading[]> =>
   prisma.$queryRaw<LatestReading[]>`
     SELECT DISTINCT ON (events.sensor_id, events.metric_id)

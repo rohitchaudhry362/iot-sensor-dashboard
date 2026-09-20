@@ -40,3 +40,20 @@ export const validateQuery =
     req.query = value as Request['query'];
     next();
   };
+
+export const validateParams =
+  (schema: ObjectSchema): RequestHandler =>
+  (req, _res, next) => {
+    const { value, error } = schema.validate(req.params, { stripUnknown: true });
+    if (error) {
+      logger.debug('Path parameter validation failed', {
+        path: req.path,
+        fields: error.details.map((d) => d.path.join('.')),
+        rules: error.details.map((d) => d.type),
+      });
+      next(badRequest('Invalid request'));
+      return;
+    }
+    req.params = value as Request['params'];
+    next();
+  };
