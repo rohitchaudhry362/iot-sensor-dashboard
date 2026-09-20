@@ -1,22 +1,48 @@
 import { prisma } from '../lib/prisma';
 
+export interface SensorMetric {
+  name: string;
+  unit: string;
+}
+
 export interface SensorSummary {
   id: number;
   name: string;
   location: string;
   networkId: number;
+  metrics: SensorMetric[];
 }
 
-export const listSensors = async (): Promise<SensorSummary[]> => {
-  const sensors = await prisma.sensor.findMany({
-    select: { id: true, name: true, location: { select: { name: true, network: { select: { networkId: true } } } } },
-    orderBy: { id: 'asc' },
+const metricsBySensor = async (): Promise<Map<number, SensorMetric[]>> => {
+  const rows = await prisma.$queryRaw<{ sensorId: number; name: string; unit: string }[]>`
+    SELECT DISTINCT events.sensor_id AS "sensorId", metrics.name AS "name", metrics.unit AS "unit"
+    FROM sensor_events events
+    JOIN metrics ON metrics.id = events.metric_id
+    ORDER BY events.sensor_id, metrics.name
+  `;
+
+  const bySensor = new Map<number, SensorMetric[]>();
+  rows.forEach(({ sensorId, name, unit }) => {
+    bySensor.set(sensorId, [...(bySensor.get(sensorId) ?? []), { name, unit }]);
   });
+  return bySensor;
+};
+
+export const listSensors = async (): Promise<SensorSummary[]> => {
+  const [sensors, metrics] = await Promise.all([
+    prisma.sensor.findMany({
+      select: { id: true, name: true, location: { select: { name: true, network: { select: { networkId: true } } } } },
+      orderBy: { id: 'asc' },
+    }),
+    metricsBySensor(),
+  ]);
+
   return sensors.map((sensor) => ({
     id: sensor.id,
     name: sensor.name,
     location: sensor.location.name,
     networkId: sensor.location.network.networkId,
+    metrics: metrics.get(sensor.id) ?? [],
   }));
 };
 
