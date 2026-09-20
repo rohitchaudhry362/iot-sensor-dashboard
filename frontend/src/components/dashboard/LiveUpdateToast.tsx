@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLiveData } from '../../context/LiveDataContext';
 import { Snackbar } from '../common';
 
-const VISIBLE_MS = 1000;
+const VISIBLE_MS = 3000;
 
 interface Toast {
   // A fresh id per update remounts the Snackbar, which restarts its timer. Without it a second update
