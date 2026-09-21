@@ -1,3 +1,9 @@
+# HomePulse - the whole system: `docker compose up` on a fresh clone and the dashboard is live on
+# http://localhost:3000 with the sample data loaded, backfilled to the present, and new readings arriving.
+#
+# Every setting has a default, so no .env file is needed to start. Copy .env.example to .env only to override
+# something. The defaults are development values and are deliberately not secret; see the note on JWT_SECRET.
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -7,10 +13,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-iot_password}
       POSTGRES_DB: ${POSTGRES_DB:-iot_dashboard}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
+      # pg_isready reports the server is accepting connections, which is what the backend is actually waiting
+      # for - the container being "started" says nothing about that.
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-iot} -d ${POSTGRES_DB:-iot_dashboard}"]
       interval: 5s
       timeout: 3s
@@ -20,7 +28,7 @@ services:
     image: eclipse-mosquitto:2
     restart: unless-stopped
     ports:
-      - "1883:1883"
+      - "${MQTT_PORT:-1883}:1883"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
@@ -29,6 +37,87 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      # Both must be *healthy*, not merely started: the entrypoint runs migrations against Postgres immediately,
+      # and the MQTT subscriber connects as the server comes up.
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # The browser's origin, which is the nginx container's published port - not the backend's own.
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${FRONTEND_PORT:-3000}}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-iot}:${POSTGRES_PASSWORD:-iot_password}@postgres:5432/${POSTGRES_DB:-iot_dashboard}
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-homepulse-backend}
+      # A known development value so a fresh clone starts. A real deployment injects a secret here; the app only
+      # requires that it is at least 32 characters, so nothing stops a proper one being supplied.
+      JWT_SECRET: ${JWT_SECRET:-homepulse-development-secret-change-me-32}
+      JWT_ACCESS_TTL_SECONDS: ${JWT_ACCESS_TTL_SECONDS:-900}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-7}
+      BCRYPT_COST: ${BCRYPT_COST:-12}
+      # Must stay false here even though NODE_ENV is production: the demo is served over plain HTTP, and a
+      # Secure cookie would never be sent back, so the refresh token would silently never arrive and every
+      # session would end after the access token's 15 minutes.
+      COOKIE_SECURE: "false"
+      DATA_DIR: /data
+    volumes:
+      # Read-only: the seed only ever reads these, and the container has no business modifying the repo.
+      - ./data:/data:ro
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    healthcheck:
+      # The public health route. This gates the simulator and the frontend, so it must only pass once migrations
+      # and seeding have finished and the HTTP server is actually listening.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      # Generous: the first start applies migrations and seeds roughly 78k rows before it answers at all.
+      retries: 30
+      start_period: 20s
+
+  simulator:
+    build:
+      context: ./simulator
+    restart: unless-stopped
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      # Waits for the backend to be healthy, not just for the broker. The backend subscribes as it starts, and
+      # anything published before that subscription exists is dropped by the broker rather than queued.
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      MQTT_URL: mqtt://mosquitto:1883
+      NETWORK_ID: ${NETWORK_ID:-1}
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # 3000 on the host so the origin matches CORS_ORIGIN; 8080 inside because nginx runs unprivileged.
+      - "${FRONTEND_PORT:-3000}:8080"
+    healthcheck:
+      # 127.0.0.1, not localhost: inside these images localhost resolves to ::1 only, while the servers listen
+      # on IPv4. The name would fail the check on a container that is serving perfectly well.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 volumes:
   postgres_data:
