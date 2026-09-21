@@ -10,6 +10,17 @@ export const parseActivityTopic = (topic: string): number | null => {
   return match ? Number(match[1]) : null;
 };
 
+// Presence arrives on network/<networkId>/status: a sibling of the activity topic.
+export const NETWORK_STATUS_TOPIC_FILTER = 'network/+/status';
+
+const NETWORK_STATUS_TOPIC_PATTERN = /^network\/(\d{1,9})\/status$/;
+
+// The network id in a status topic, or null when the topic is not a status topic.
+export const parseNetworkStatusTopic = (topic: string): number | null => {
+  const match = NETWORK_STATUS_TOPIC_PATTERN.exec(topic);
+  return match ? Number(match[1]) : null;
+};
+
 // Sensor events arrive on network/<networkId>/sensors/<sensorName>/event.
 export const SENSOR_EVENT_TOPIC_FILTER = 'network/+/sensors/+/event';
 

@@ -2,9 +2,10 @@ import mqtt from 'mqtt';
 import { env } from '../config/env';
 import { logger } from '../lib/logger';
 import { routeMessage } from './messageRouter';
-import { ACTIVITY_TOPIC_FILTER, SENSOR_EVENT_TOPIC_FILTER } from './topics';
+import { ACTIVITY_TOPIC_FILTER, NETWORK_STATUS_TOPIC_FILTER, SENSOR_EVENT_TOPIC_FILTER } from './topics';
 
-const TOPIC_FILTERS = [ACTIVITY_TOPIC_FILTER, SENSOR_EVENT_TOPIC_FILTER];
+// topic filters are used to subscribe to the broker, so they must be MQTT wildcards. The handlers get typed ids from parsing the topic.
+const TOPIC_FILTERS = [ACTIVITY_TOPIC_FILTER, SENSOR_EVENT_TOPIC_FILTER, NETWORK_STATUS_TOPIC_FILTER];
 
 export interface MqttSubscriber {
   stop: () => Promise<void>;
