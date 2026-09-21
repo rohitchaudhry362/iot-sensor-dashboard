@@ -108,6 +108,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    environment:
+      DASHBOARD_URL: http://localhost:${FRONTEND_PORT:-3000}
     ports:
       # 3000 on the host so the origin matches CORS_ORIGIN; 8080 inside because nginx runs unprivileged.
       - "${FRONTEND_PORT:-3000}:8080"

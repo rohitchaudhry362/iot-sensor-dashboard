@@ -14,5 +14,8 @@ RUN npm run build
 # root. Nothing here needs a privileged port, so there is no reason to take one.
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# The base image's entrypoint runs every executable script in this folder, in name order, before starting nginx;
+# the 99- prefix puts this one last, immediately before the server comes up.
+COPY docker/99-announce-dashboard-url.sh /docker-entrypoint.d/
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 8080
