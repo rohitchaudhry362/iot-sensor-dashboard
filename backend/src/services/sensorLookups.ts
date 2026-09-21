@@ -42,3 +42,10 @@ export const findActionByName = cacheFoundItems<{ id: number }>((name) =>
 export const findMetricByName = cacheFoundItems<MetricRecord>((name) =>
   prisma.metric.findUnique({ where: { name }, select: { id: true, unit: true } }),
 );
+
+const findNetworkByIdString = cacheFoundItems<{ id: number }>((networkId) =>
+  prisma.network.findUnique({ where: { networkId: Number(networkId) }, select: { id: true } }),
+);
+
+export const findNetworkByNetworkId = (networkId: number): Promise<{ id: number } | null> =>
+  findNetworkByIdString(String(networkId));

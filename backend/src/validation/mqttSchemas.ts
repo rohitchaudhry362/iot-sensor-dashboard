@@ -12,6 +12,14 @@ export const activityMessageSchema = Joi.object<ActivityMessage>({
   activity: Joi.number().min(0).max(15).required().example(5.14),
 }).example({ time: '2026-09-19T22:45:00.000Z', activity: 5.14 });
 
+export interface NetworkStatusMessage {
+  status: 'online' | 'offline';
+}
+
+export const networkStatusMessageSchema = Joi.object<NetworkStatusMessage>({
+  status: Joi.string().valid('online', 'offline').required().example('online'),
+}).example({ status: 'online' });
+
 // Action and metric names are letters, digits and underscores only (at most 50), so they are safe to put in a log line.
 const NAME_PATTERN = /^\w{1,50}$/;
 

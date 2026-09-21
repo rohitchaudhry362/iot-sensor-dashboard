@@ -1,4 +1,4 @@
-import type { ActivityUpdateEvent, SensorDetectedEvent, SensorUpdateEvent } from './events';
+import type { ActivityUpdateEvent, NetworkStatusEvent, SensorDetectedEvent, SensorUpdateEvent } from './events';
 import { getSocketServer } from './socketServer';
 
 // Called after a message has been stored, never before: the browser is told about rows that exist.
@@ -14,4 +14,8 @@ export const broadcastSensorDetected = (event: SensorDetectedEvent): void => {
 
 export const broadcastActivityUpdate = (event: ActivityUpdateEvent): void => {
   getSocketServer()?.emit('activity:update', event);
+};
+
+export const broadcastNetworkStatus = (event: NetworkStatusEvent): void => {
+  getSocketServer()?.emit('network:status', event);
 };

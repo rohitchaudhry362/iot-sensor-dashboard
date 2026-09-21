@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import { env } from '../config/env';
 import { logger } from '../lib/logger';
 import { verifyAccessToken } from '../lib/tokens';
+import { listNetworkPresence } from '../services/networkPresence';
 import type { ServerToClientEvents } from './events';
 
 export interface SocketServer {
@@ -56,6 +57,8 @@ export const startSocketServer = (httpServer: HttpServer): SocketServer => {
       clearTimeout(expiryTimer);
       logger.info(`Socket ${socket.id} disconnected: ${reason}`);
     });
+
+    listNetworkPresence().forEach((presence) => socket.emit('network:status', presence));
 
     logger.info(`Socket ${socket.id} connected for user ${socket.data.userUuid}`);
   });

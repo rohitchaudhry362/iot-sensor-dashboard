@@ -20,6 +20,7 @@ export const handleNetworkStatusMessage = async (topic: string, networkId: numbe
   const presence = setNetworkStatus(networkId, message.status);
   if (!presence) return;
 
+  // send status to browsers through socket.io
   broadcastNetworkStatus(presence);
   logger.info(`Network ${networkId} is ${presence.status}`);
 };
