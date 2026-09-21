@@ -2,9 +2,9 @@ import type { Components, Theme } from '@mui/material/styles';
 import { colors } from './colors';
 import { borderWidth, elevation, focusRing, glassBlur, radius } from './shape';
 import { layout } from './spacing';
+import { fontWeight } from './typography';
 
 const HEADER_FLOAT_GAP_PX = layout.headerFloatGap;
-import { fontWeight } from './typography';
 
 const focusOutline = {
   outline: `${focusRing.width}px solid ${colors.focus}`,
