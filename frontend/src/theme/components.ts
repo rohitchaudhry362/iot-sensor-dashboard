@@ -1,6 +1,9 @@
 import type { Components, Theme } from '@mui/material/styles';
 import { colors } from './colors';
-import { borderWidth, elevation, focusRing, radius } from './shape';
+import { borderWidth, elevation, focusRing, glassBlur, radius } from './shape';
+import { layout } from './spacing';
+
+const HEADER_FLOAT_GAP_PX = layout.headerFloatGap;
 import { fontWeight } from './typography';
 
 const focusOutline = {
@@ -147,8 +150,18 @@ export const components: Components<Omit<Theme, 'components'>> = {
     defaultProps: { elevation: 0, color: 'inherit' },
     styleOverrides: {
       root: {
-        backgroundColor: colors.beige,
-        borderBottom: `${borderWidth}px solid ${colors.border}`,
+        backgroundColor: colors.glass.surface,
+        backdropFilter: glassBlur,
+        WebkitBackdropFilter: glassBlur,
+        top: HEADER_FLOAT_GAP_PX,
+        marginInline: 'auto',
+        width: `calc(100% - ${HEADER_FLOAT_GAP_PX * 2}px)`,
+        borderRadius: radius.large,
+        border: `${borderWidth}px solid ${colors.glass.edge}`,
+        boxShadow: elevation.raised,
+        '@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))': {
+          backgroundColor: colors.glass.surfaceOpaque,
+        },
       },
     },
   },

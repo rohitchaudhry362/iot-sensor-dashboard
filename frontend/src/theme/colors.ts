@@ -8,6 +8,7 @@ export const colors = {
     700: '#343f6a',
   },
   secondary: {
+    100: '#d8eafa',
     200: '#b1d4f5',
     500: '#3d94e7',
   },
@@ -30,6 +31,11 @@ export const colors = {
   accent: {
     purple: '#b157ae',
     yellow: '#eecd28',
+  },
+  glass: {
+    surface: 'rgba(255, 255, 255, 0.72)',
+    surfaceOpaque: 'rgba(255, 255, 255, 0.94)',
+    edge: 'rgba(255, 255, 255, 0.65)',
   },
   border: 'rgba(0, 0, 0, 0.1)',
   borderStrong: 'rgba(0, 0, 0, 0.24)',

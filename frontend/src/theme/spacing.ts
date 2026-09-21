@@ -15,4 +15,5 @@ export const layout = {
   contentMaxWidth: 1200,
   authFormMaxWidth: 440,
   headerHeight: 64,
+  headerFloatGap: 8,
 } as const;

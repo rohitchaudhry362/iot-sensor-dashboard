@@ -12,6 +12,8 @@ export const focusRing = {
   offset: 3,
 } as const;
 
+export const glassBlur = 'blur(14px) saturate(160%)';
+
 export const elevation = {
   none: 'none',
   card: '0 1px 2px rgba(0, 0, 0, 0.04)',

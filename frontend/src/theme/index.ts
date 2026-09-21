@@ -17,6 +17,7 @@ export const theme = createTheme({
 
 export { breakpoints } from './breakpoints';
 export { colors } from './colors';
-export { borderWidth, elevation, focusRing, radius } from './shape';
+export { gradients } from './gradients';
+export { borderWidth, elevation, focusRing, glassBlur, radius } from './shape';
 export { layout, space, SPACING_UNIT } from './spacing';
 export { fontFamily, fontWeight } from './typography';

@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { AppBar, Avatar, Box, Button, Logo, Stack, Toolbar, Typography } from '../components/common';
 import { useAuth } from '../context/AuthContext';
 import { LogoutRounded } from '../icons';
-import { colors, layout } from '../theme';
+import { colors, gradients, layout } from '../theme';
 
 export const AppLayout = () => {
   const { state: authState, logout } = useAuth();
@@ -16,7 +16,15 @@ export const AppLayout = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100%' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: colors.beige,
+        backgroundImage: gradients.page,
+        backgroundRepeat: 'no-repeat',
+        pt: `${layout.headerFloatGap}px`,
+      }}
+    >
       <AppBar position="sticky">
         <Toolbar sx={{ minHeight: layout.headerHeight, px: layout.pagePaddingX, gap: 2 }}>
           <Logo size="small" />
@@ -45,7 +53,12 @@ export const AppLayout = () => {
           </Button>
         </Toolbar>
       </AppBar>
-      <Box component="main" sx={{ px: layout.pagePaddingX, py: 4, maxWidth: layout.contentMaxWidth, mx: 'auto' }}>
+      {/* Less padding above than below: the floating header already leaves a gap under itself, so the full
+          amount here read as a hole between the bar and the greeting. */}
+      <Box
+        component="main"
+        sx={{ px: layout.pagePaddingX, pt: 2, pb: 4, maxWidth: layout.contentMaxWidth, mx: 'auto' }}
+      >
         <Outlet />
       </Box>
     </Box>
