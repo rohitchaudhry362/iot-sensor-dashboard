@@ -1,4 +1,4 @@
-export type NetworkStatus = 'online' | 'offline' | 'unknown';
+export type NetworkStatus = 'online' | 'offline';
 
 export interface NetworkPresence {
   networkId: number;
@@ -19,6 +19,4 @@ export const setNetworkStatus = (networkId: number, status: NetworkStatus): Netw
   return presence;
 };
 
-// Every network heard from so far. A network missing from this list is `unknown` rather than offline: nothing has
-// been heard about it, which is not the same as having heard that it is down.
 export const listNetworkPresence = (): NetworkPresence[] => [...presenceByNetworkId.values()];

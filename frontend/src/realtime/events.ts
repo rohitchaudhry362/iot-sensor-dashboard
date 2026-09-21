@@ -22,3 +22,11 @@ export interface ActivityUpdateEvent {
   time: string;
   activity: number;
 }
+
+export type NetworkStatus = 'online' | 'offline';
+
+export interface NetworkStatusEvent {
+  networkId: number;
+  status: NetworkStatus;
+  changedAt: string;
+}

@@ -1,11 +1,13 @@
 import { io, type Socket } from 'socket.io-client';
 import { getAccessToken, refreshSession } from '../api/client';
-import type { ActivityUpdateEvent, SensorDetectedEvent, SensorUpdateEvent } from './events';
+import type { ActivityUpdateEvent, NetworkStatusEvent, SensorDetectedEvent, SensorUpdateEvent } from './events';
 
 export interface LiveDataHandlers {
   onSensorUpdate: (event: SensorUpdateEvent) => void;
   onSensorDetected: (event: SensorDetectedEvent) => void;
   onActivityUpdate: (event: ActivityUpdateEvent) => void;
+  onNetworkStatus: (event: NetworkStatusEvent) => void;
+  onConnectionLost: () => void;
 }
 
 export const connectLiveData = (handlers: LiveDataHandlers): (() => void) => {
@@ -33,6 +35,7 @@ export const connectLiveData = (handlers: LiveDataHandlers): (() => void) => {
   };
 
   socket.on('disconnect', (reason) => {
+    handlers.onConnectionLost();
     if (reason === 'io server disconnect') reauthenticateAndReconnect();
   });
 
@@ -44,6 +47,7 @@ export const connectLiveData = (handlers: LiveDataHandlers): (() => void) => {
   socket.on('sensor:update', handlers.onSensorUpdate);
   socket.on('sensor:detected', handlers.onSensorDetected);
   socket.on('activity:update', handlers.onActivityUpdate);
+  socket.on('network:status', handlers.onNetworkStatus);
 
   return () => {
     socket.removeAllListeners();
