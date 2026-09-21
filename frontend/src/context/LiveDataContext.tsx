@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { fetchActivity, fetchLatestReadings, fetchSensors } from '../api/dashboard';
 import type { ActivityBucket, LatestReading, Sensor } from '../api/types';
+import type { NetworkStatus } from '../realtime/events';
 import { connectLiveData } from '../realtime/socket';
 import { useAuth } from './AuthContext';
 
@@ -39,11 +40,17 @@ export interface ActivityPoint {
   minutes: number;
 }
 
+export interface NetworkStatusValue {
+  status: NetworkStatus;
+  changedAt: string;
+}
+
 export interface LiveDataValue {
   temperature: Measurement | null;
   humidity: Measurement | null;
   door: Detection | null;
   activity: ActivityPoint | null;
+  networkStatus: NetworkStatusValue | null;
   isLoading: boolean;
   isError: boolean;
 }
@@ -53,6 +60,7 @@ const EMPTY_LIVE_DATA: LiveDataValue = {
   humidity: null,
   door: null,
   activity: null,
+  networkStatus: null,
   isLoading: false,
   isError: false,
 };
@@ -99,6 +107,9 @@ export const LiveDataProvider = ({ children }: { children: ReactNode }) => {
   const [humidity, setHumidity] = useState<MeasurementState | null>(null);
   const [door, setDoor] = useState<DetectionState | null>(null);
   const [activity, setActivity] = useState<ActivityPoint | null>(null);
+  // Socket-only, with no REST snapshot behind it: presence is not stored anywhere, so the server pushes the
+  // current value the moment this browser connects rather than answering a request for it.
+  const [networkStatus, setNetworkStatus] = useState<NetworkStatusValue | null>(null);
 
   const readings = readingsQuery.data?.readings;
   const buckets = activityQuery.data?.buckets;
@@ -134,6 +145,10 @@ export const LiveDataProvider = ({ children }: { children: ReactNode }) => {
       },
       onSensorDetected: (event) => setDoor({ occurredAt: event.occurredAt, sensorName: event.sensorName }),
       onActivityUpdate: (event) => setActivity({ time: event.time, minutes: event.activity }),
+      onNetworkStatus: (event) => setNetworkStatus({ status: event.status, changedAt: event.changedAt }),
+      // The readings above are left alone: each one is still the last thing that device actually reported, and
+      // says its own age. Presence is the one value that would become a lie, because it is a claim about now.
+      onConnectionLost: () => setNetworkStatus(null),
     });
   }, [isAuthenticated]);
 
@@ -146,10 +161,11 @@ export const LiveDataProvider = ({ children }: { children: ReactNode }) => {
       humidity: humidity && { ...humidity, location: locationOf(sensors, humidity.sensorName) },
       door: door && { occurredAt: door.occurredAt, location: locationOf(sensors, door.sensorName) },
       activity,
+      networkStatus,
       isLoading,
       isError,
     }),
-    [temperature, humidity, door, activity, sensors, isLoading, isError],
+    [temperature, humidity, door, activity, networkStatus, sensors, isLoading, isError],
   );
 
   return <LiveDataContext.Provider value={value}>{children}</LiveDataContext.Provider>;

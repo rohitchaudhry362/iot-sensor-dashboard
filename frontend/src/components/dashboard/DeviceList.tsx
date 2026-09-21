@@ -5,6 +5,7 @@ import { DoorFrontRounded, SensorsRounded } from '../../icons';
 import { borderWidth, colors, radius } from '../../theme';
 import { range } from '../../util/range';
 import { Alert, Box, Card, Skeleton, Stack, Typography } from '../common';
+import { DeviceStatus } from './DeviceStatus';
 
 const describeMetrics = (sensor: Sensor): string =>
   sensor.metrics.length === 0
@@ -20,13 +21,24 @@ export const DeviceList = () => {
   return (
     <Card padding="small">
       <Stack spacing={2}>
-        <Box>
-          <Typography variant="h6" component="h2">
-            Devices
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            What is reporting from your home, and what each one measures.
-          </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 1.5,
+            alignItems: { sm: 'flex-start' },
+            justifyContent: 'space-between',
+          }}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" component="h2">
+              Devices
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              What is reporting from your home, and what each one measures.
+            </Typography>
+          </Box>
+          <DeviceStatus />
         </Box>
 
         {isError && <Alert severity="error">We could not load your devices.</Alert>}
