@@ -188,6 +188,7 @@ Nine tables in third normal form. The device catalog (network → location → s
 
 ```mermaid
 erDiagram
+    direction LR
     users ||--o{ refresh_tokens : "has sessions"
 
     users {
@@ -281,12 +282,18 @@ The **simulator** is a separate container that acts as the home's devices. It ho
 
 #### Topics and payloads
 
-| Topic | Payload example | QoS / retained | When |
+| Topic | QoS | Retained | Sent when |
 |---|---|---|---|
-| `network/1/activity` | `{"time":"2026-09-21T10:15:00.000Z","activity":5.14}` | 1 / no | At every real quarter-hour, for the bucket that just ended, plus one at start-up |
-| `network/1/sensors/SENSOR_7C3E822F6E550000/event` | `{"action":"SensorValueChanged","payload":{"unit":"C","temperature":24.4},"occurredAt":"…"}` | 1 / no | Bathroom: one temperature and one humidity message every 15 min |
-| `network/1/sensors/SENSOR_282C02BFFFEEE739/event` | `{"action":"SensorDetected","payload":{},"occurredAt":"…"}` | 1 / no | Front door: after a random 1 to 30 minute gap |
-| `network/1/status` | `{"status":"online"}` or `{"status":"offline"}` | 1 / **retained** | `online` on every connect, `offline` on graceful shutdown, or `offline` published **by the broker** (Last Will) if the simulator dies |
+| `network/1/activity` | 1 | No | At every real quarter-hour, for the 15-minute bucket that just ended, plus one at start-up |
+| `network/1/sensors/<sensor>/event` | 1 | No | **Bathroom** (`SENSOR_7C3E822F6E550000`): one temperature and one humidity reading every 15 min |
+| `network/1/sensors/<sensor>/event` | 1 | No | **Front door** (`SENSOR_282C02BFFFEEE739`): one detection after a random 1 to 30 minute gap |
+| `network/1/status` | 1 | **Yes** | `online` on every connect, `offline` on graceful shutdown, or `offline` published **by the broker** (Last Will) if the simulator dies |
+
+**Payload examples:**
+- Activity: `{"time":"2026-09-21T10:15:00.000Z","activity":5.14}`
+- Bathroom reading: `{"action":"SensorValueChanged","payload":{"unit":"C","temperature":24.4},"occurredAt":"…"}`
+- Door detection: `{"action":"SensorDetected","payload":{},"occurredAt":"…"}`
+- Presence: `{"status":"online"}` or `{"status":"offline"}`
 
 Values are random within the ranges seen in the sample data (temperature 18.8 to 28.7 °C, humidity 21 to 89 %, activity 0 to 14.83 min). Timestamps come from the real clock.
 
