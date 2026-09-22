@@ -22,11 +22,14 @@ export const useActivityHistory = (): ActivityHistory => {
   const [points, setPoints] = useState<ActivityPoint[]>([]);
 
   const buckets = data?.buckets;
+  // Merged rather than only used when the series is still empty. A live value can arrive before this snapshot
+  // resolves - which is what happens on sign-in, where the provider and its socket are already running while the
+  // dashboard is still mounting - and skipping the snapshot then threw the whole history away, leaving the one
+  // live point. Applying the live points over the snapshot keeps both, whichever lands first.
   useEffect(() => {
     if (!buckets) return;
-    setPoints((current) =>
-      current.length > 0 ? current : buckets.map((bucket) => ({ time: bucket.time, minutes: bucket.activity })),
-    );
+    const snapshot = buckets.map((bucket) => ({ time: bucket.time, minutes: bucket.activity }));
+    setPoints((current) => current.reduce(withPoint, snapshot));
   }, [buckets]);
 
   // Runs for the seeded value too, which is harmless: that bucket is already in the series and replacing it
