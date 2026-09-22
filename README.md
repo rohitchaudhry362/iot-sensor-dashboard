@@ -36,7 +36,7 @@ The frontend, backend and simulator are all written in strict TypeScript.
 | Layer | Technology | Why this choice |
 |---|---|---|
 | **Frontend** | React 18, Vite 6, TypeScript | Fast dev server and build, typed end to end |
-| UI | MUI 9 with a custom theme (light and dark) | Accessible components; every design token lives in `frontend/src/theme/` |
+| UI | MUI 9 with a custom light theme | Accessible components; every design token lives in `frontend/src/theme/` |
 | Charts | Recharts 3 | Declarative React charts, enough for time series and bar charts |
 | Server state | TanStack Query 5 | Caching, retries and loading/error states for REST calls |
 | App state | React Context (`AuthContext`, `LiveDataContext`) | Two small pieces of global state don't need Redux |
@@ -125,7 +125,6 @@ docker compose start simulator
 - **Sensor history**: temperature or humidity as bars coloured by comfort band, with the ideal range shaded behind them. You can pick the metric and move the 12-hour window to any point in the history.
 
 **UI**
-- Light and dark mode. It follows the operating system until you choose one, and then remembers your choice.
 - Responsive layout from phone to desktop. Loading skeletons, empty states and error messages on every panel.
 - Unknown URLs show a **Page not found** page with a link back to the dashboard. Like every other page it requires sign-in, so a signed-out visitor signs in first.
 - Opening a protected page while signed out leads to the sign-in page, then **back to the page you asked for**. Opening `/login` or `/register` while signed in goes straight to the dashboard.
