@@ -1,14 +1,21 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { AppBar, Avatar, Box, Button, Logo, Stack, Toolbar, Typography } from '../components/common';
+import { Outlet, useLocation } from 'react-router-dom';
+import { AppBar, Avatar, Box, Button, LinkTab, Logo, Stack, Tabs, Toolbar, Typography } from '../components/common';
 import { useAuth } from '../context/AuthContext';
 import { LogoutRounded } from '../icons';
 import { colors, gradients, layout } from '../theme';
 
+const NAV_TABS = [
+  { label: 'Dashboard', path: '/' },
+  { label: 'Profile', path: '/profile' },
+] as const;
+
 export const AppLayout = () => {
   const { state: authState, logout } = useAuth();
+  const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const user = authState.user;
+  const activeTabPath = NAV_TABS.find((tab) => tab.path === location.pathname)?.path ?? false;
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -26,8 +33,18 @@ export const AppLayout = () => {
       }}
     >
       <AppBar position="sticky">
-        <Toolbar sx={{ minHeight: layout.headerHeight, px: layout.pagePaddingX, gap: 2 }}>
+        <Toolbar sx={{ minHeight: layout.headerHeight, px: layout.pagePaddingX, columnGap: 2, flexWrap: 'wrap' }}>
           <Logo size="small" />
+          <Tabs
+            value={activeTabPath}
+            role="navigation"
+            aria-label="Main"
+            sx={{ order: { xs: 1, md: 0 }, width: { xs: '100%', md: 'auto' } }}
+          >
+            {NAV_TABS.map((tab) => (
+              <LinkTab key={tab.path} value={tab.path} label={tab.label} to={tab.path} />
+            ))}
+          </Tabs>
           <Box sx={{ flexGrow: 1 }} />
           {user && (
             <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>

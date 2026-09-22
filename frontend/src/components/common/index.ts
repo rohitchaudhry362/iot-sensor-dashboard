@@ -15,6 +15,7 @@ export { Select, type SelectOption, type SelectProps } from './Select';
 export { Skeleton, type SkeletonProps } from './Skeleton';
 export { Snackbar, type SnackbarProps } from './Snackbar';
 export { Stack, type StackProps } from './Stack';
+export { LinkTab, Tabs, type LinkTabProps, type TabsProps } from './Tabs';
 export { TextField, type TextFieldProps } from './TextField';
 export { Toolbar, type ToolbarProps } from './Toolbar';
 export { Typography, type TypographyProps } from './Typography';
