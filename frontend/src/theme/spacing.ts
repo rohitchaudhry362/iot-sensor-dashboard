@@ -14,6 +14,7 @@ export const layout = {
   pagePaddingX: { xs: 2, md: 5 },
   contentMaxWidth: 1200,
   authFormMaxWidth: 440,
+  profileFormMaxWidth: 640,
   headerHeight: 64,
   headerFloatGap: 8,
 } as const;

@@ -12,6 +12,7 @@ type AuthState =
 export interface AuthContextValue {
   state: AuthState;
   startSession: (user: User) => void;
+  updateUser: (user: User) => void;
   logout: () => Promise<void>;
 }
 
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       state: authState,
       startSession: (user) => setAuthState({ status: 'authenticated', user }),
+      updateUser: (user) => setAuthState({ status: 'authenticated', user }),
       logout: async () => {
         try {
           await logoutRequest();

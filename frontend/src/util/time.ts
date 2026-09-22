@@ -34,5 +34,8 @@ export const formatExactTime = (isoTime: string, now: number): string => {
     : `${moment.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} at ${clock}`;
 };
 
+export const formatCalendarDate = (isoTime: string): string =>
+  new Date(isoTime).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+
 export const isStale = (isoTime: string, now: number, staleAfterMs: number = STALE_AFTER_MS): boolean =>
   now - new Date(isoTime).getTime() > staleAfterMs;

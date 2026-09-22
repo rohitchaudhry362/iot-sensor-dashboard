@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import type { LoginInput, RegisterInput } from '../api/auth';
+import type { LoginInput, ProfileInput, RegisterInput } from '../api/auth';
 
 export type FieldErrors<T> = Partial<Record<keyof T, string>>;
 
@@ -54,6 +54,12 @@ const registerSchema = Joi.object<RegisterInput>({
   password: newPassword,
 });
 
+const profileSchema = Joi.object<ProfileInput>({
+  firstName: personName('First name'),
+  lastName: personName('Last name'),
+  email,
+});
+
 const loginSchema = Joi.object<LoginInput>({
   email,
   password: Joi.string().required().messages({
@@ -75,5 +81,7 @@ export const validateLogin = (input: LoginInput): FieldErrors<LoginInput> => toF
 
 export const validateRegister = (input: RegisterInput): FieldErrors<RegisterInput> =>
   toFieldErrors(registerSchema, input);
+
+export const validateProfile = (input: ProfileInput): FieldErrors<ProfileInput> => toFieldErrors(profileSchema, input);
 
 export const hasErrors = <T>(errors: FieldErrors<T>): boolean => Object.keys(errors).length > 0;
