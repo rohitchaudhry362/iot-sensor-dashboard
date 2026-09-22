@@ -24,4 +24,5 @@ RUN mkdir -p node_modules/.vite-temp && chown node:node node_modules/.vite-temp
 USER node
 
 EXPOSE 8080
+# Prints the ready banner, then runs `vite preview` (see docker-entrypoint.sh).
 ENTRYPOINT ["./docker-entrypoint.sh"]
