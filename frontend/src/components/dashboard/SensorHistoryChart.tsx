@@ -244,12 +244,7 @@ export const SensorHistoryChart = () => {
                   }}
                   contentStyle={{ fontFamily, fontSize: 13, borderRadius: 8, border: `1px solid ${colors.border}` }}
                 />
-                <Bar
-                  dataKey="value"
-                  isAnimationActive={false}
-                  radius={[2, 2, 0, 0]}
-                  maxBarSize={BAR_WIDTH}
-                >
+                <Bar dataKey="value" isAnimationActive={false} radius={[2, 2, 0, 0]} maxBarSize={BAR_WIDTH}>
                   {bars.map((bar) => (
                     <Cell key={bar.timestamp} fill={bar.color} />
                   ))}
