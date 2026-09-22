@@ -53,7 +53,7 @@ services:
       NODE_ENV: production
       PORT: 4000
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      # The browser's origin, which is the nginx container's published port - not the backend's own.
+      # The browser's origin, which is the frontend container's published port - not the backend's own.
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${FRONTEND_PORT:-3000}}
       DATABASE_URL: postgresql://${POSTGRES_USER:-iot}:${POSTGRES_PASSWORD:-iot_password}@postgres:5432/${POSTGRES_DB:-iot_dashboard}
       MQTT_URL: mqtt://mosquitto:1883
@@ -110,8 +110,10 @@ services:
         condition: service_healthy
     environment:
       DASHBOARD_URL: http://localhost:${FRONTEND_PORT:-3000}
+      # Read by vite.config.ts when `vite preview` starts; the service name, since localhost is this container.
+      VITE_BACKEND_URL: http://backend:4000
     ports:
-      # 3000 on the host so the origin matches CORS_ORIGIN; 8080 inside because nginx runs unprivileged.
+      # 3000 on the host so the origin matches CORS_ORIGIN; 8080 inside, where `vite preview` listens as non-root.
       - "${FRONTEND_PORT:-3000}:8080"
     healthcheck:
       # 127.0.0.1, not localhost: inside these images localhost resolves to ::1 only, while the servers listen
