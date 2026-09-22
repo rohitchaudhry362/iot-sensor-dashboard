@@ -7,6 +7,9 @@ import { Alert, Box, Card, Skeleton, Stack, Typography } from '../common';
 
 const BUCKET_MINUTES = 15;
 const CHART_HEIGHT = 220;
+const VALUE_LABEL_OFFSET = 8;
+const VALUE_LABEL_FONT_SIZE = 10;
+const CHART_MARGIN = { top: VALUE_LABEL_OFFSET + VALUE_LABEL_FONT_SIZE + 4, right: 16, bottom: 0, left: -24 };
 
 export const ActivityChart = () => {
   const { points: history, isLoading, isError } = useActivityHistory();
@@ -42,7 +45,7 @@ export const ActivityChart = () => {
         ) : (
           <Box sx={{ height: CHART_HEIGHT }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={points} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
+              <AreaChart data={points} margin={CHART_MARGIN}>
                 <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={colors.brand[500]} stopOpacity={0.35} />
                   <stop offset="100%" stopColor={colors.brand[500]} stopOpacity={0.02} />
@@ -94,9 +97,9 @@ export const ActivityChart = () => {
                   <LabelList
                     dataKey="minutes"
                     position="top"
-                    offset={8}
+                    offset={VALUE_LABEL_OFFSET}
                     formatter={(value: unknown) => (typeof value === 'number' ? value.toFixed(1) : '')}
-                    style={{ fill: colors.neutral.base, fontSize: 10, fontFamily }}
+                    style={{ fill: colors.neutral.base, fontSize: VALUE_LABEL_FONT_SIZE, fontFamily }}
                   />
                 </Area>
               </AreaChart>
