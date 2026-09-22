@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AppBar, Avatar, Box, Button, LinkTab, Logo, Stack, Tabs, Toolbar, Typography } from '../components/common';
 import { useAuth } from '../context/AuthContext';
 import { LogoutRounded } from '../icons';
-import { colors, gradients, layout } from '../theme';
+import { borderWidth, colors, gradients, layout } from '../theme';
 
 const NAV_TABS = [
   { label: 'Dashboard', path: '/' },
@@ -33,16 +33,35 @@ export const AppLayout = () => {
       }}
     >
       <AppBar position="sticky">
-        <Toolbar sx={{ minHeight: layout.headerHeight, px: layout.pagePaddingX, columnGap: 2, flexWrap: 'wrap' }}>
+        <Toolbar
+          sx={{
+            minHeight: layout.headerHeight,
+            px: layout.pagePaddingX,
+            py: { xs: 1, md: 0 },
+            columnGap: 2,
+            flexWrap: 'wrap',
+          }}
+        >
           <Logo size="small" />
           <Tabs
             value={activeTabPath}
             role="navigation"
             aria-label="Main"
-            sx={{ order: { xs: 1, md: 0 }, width: { xs: '100%', md: 'auto' } }}
+            sx={{
+              order: { xs: 1, md: 0 },
+              width: { xs: '100%', md: 'auto' },
+              mt: { xs: 1, md: 0 },
+              borderTop: { xs: `${borderWidth}px solid ${colors.border}`, md: 'none' },
+            }}
           >
             {NAV_TABS.map((tab) => (
-              <LinkTab key={tab.path} value={tab.path} label={tab.label} to={tab.path} />
+              <LinkTab
+                key={tab.path}
+                value={tab.path}
+                label={tab.label}
+                to={tab.path}
+                sx={{ flex: { xs: 1, md: 'none' } }}
+              />
             ))}
           </Tabs>
           <Box sx={{ flexGrow: 1 }} />
