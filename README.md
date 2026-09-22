@@ -112,6 +112,7 @@ docker compose start simulator
 
 **Accounts and sessions**
 - Register, sign in and sign out. The session survives a page reload, and the short-lived access token is renewed silently in the background.
+- **Profile page** (the **Profile** tab in the header, next to **Dashboard**): see your first name, last name, email and join date, and edit the first three. The email stays unique, so an address that already has an account is refused.
 - Only `/login` and `/register` are public. Every other page, every REST endpoint (except health and the auth routes) and the WebSocket require a signed-in user.
 
 **Live dashboard**
