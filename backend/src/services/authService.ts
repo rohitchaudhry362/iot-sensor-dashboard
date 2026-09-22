@@ -5,9 +5,11 @@ import { logger } from '../lib/logger';
 import { hashPassword, verifyPassword } from '../lib/password';
 import { prisma } from '../lib/prisma';
 import { generateRefreshToken, hashRefreshToken, signAccessToken } from '../lib/tokens';
-import type { LoginInput, RegisterInput } from '../validation/authSchemas';
+import type { LoginInput, RegisterInput, UpdateProfileInput } from '../validation/authSchemas';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+const emailTaken = () => conflict('EMAIL_TAKEN', 'An account with this email already exists');
 
 const publicUserSelect = {
   userUuid: true,
@@ -49,7 +51,7 @@ const createSession = async (db: Prisma.TransactionClient, userUuid: string, now
 
 export const registerUser = async (input: RegisterInput): Promise<AuthResult> => {
   const existing = await prisma.user.findUnique({ where: { email: input.email }, select: { userUuid: true } });
-  if (existing) throw conflict('EMAIL_TAKEN', 'An account with this email already exists');
+  if (existing) throw emailTaken();
 
   const user = await prisma.user.create({
     data: {
@@ -109,5 +111,18 @@ export const endSession = async (rawRefreshToken: string): Promise<void> => {
 export const getUser = async (userUuid: string): Promise<PublicUser> => {
   const user = await prisma.user.findUnique({ where: { userUuid }, select: publicUserSelect });
   if (!user) throw unauthorized();
+  return user;
+};
+
+export const updateProfile = async (userUuid: string, input: UpdateProfileInput): Promise<PublicUser> => {
+  const emailOwner = await prisma.user.findUnique({ where: { email: input.email }, select: { userUuid: true } });
+  if (emailOwner && emailOwner.userUuid !== userUuid) throw emailTaken();
+
+  const user = await prisma.user.update({
+    where: { userUuid },
+    data: { email: input.email, firstName: input.firstName, lastName: input.lastName },
+    select: publicUserSelect,
+  });
+  logger.info('User profile updated', { userUuid });
   return user;
 };

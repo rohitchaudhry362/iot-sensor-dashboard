@@ -2,8 +2,16 @@ import type { Response } from 'express';
 import { asyncHandler } from '../lib/asyncHandler';
 import { unauthorized } from '../lib/errors';
 import { clearRefreshCookie, readRefreshCookie, setRefreshCookie } from '../lib/refreshCookie';
-import { endSession, getUser, loginUser, registerUser, rotateSession, type AuthResult } from '../services/authService';
-import type { LoginInput, RegisterInput } from '../validation/authSchemas';
+import {
+  endSession,
+  getUser,
+  loginUser,
+  registerUser,
+  rotateSession,
+  updateProfile,
+  type AuthResult,
+} from '../services/authService';
+import type { LoginInput, RegisterInput, UpdateProfileInput } from '../validation/authSchemas';
 
 const sendAuthResult = (res: Response, status: number, { user, session }: AuthResult): void => {
   setRefreshCookie(res, session.refreshToken, session.refreshTokenExpiresAt);
@@ -38,4 +46,8 @@ export const logout = asyncHandler(async (req, res) => {
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
   res.json({ user: await getUser(req.auth!.userUuid) });
+});
+
+export const updateCurrentUser = asyncHandler(async (req, res) => {
+  res.json({ user: await updateProfile(req.auth!.userUuid, req.body as UpdateProfileInput) });
 });

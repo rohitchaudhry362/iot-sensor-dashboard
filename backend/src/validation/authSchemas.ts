@@ -12,6 +12,12 @@ export interface LoginInput {
   password: string;
 }
 
+export interface UpdateProfileInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 // bcrypt only uses the first 72 bytes of a password, so longer ones are rejected rather than silently truncated.
 const BCRYPT_MAX_BYTES = 72;
 
@@ -51,6 +57,12 @@ export const registerSchema = Joi.object<RegisterInput>({
   lastName: 'Doe',
   password: 'CorrectHorse9',
 });
+
+export const updateProfileSchema = Joi.object<UpdateProfileInput>({
+  email,
+  firstName: personName.example('Jane'),
+  lastName: personName.example('Doe'),
+}).example({ email: 'jane.doe@example.com', firstName: 'Jane', lastName: 'Doe' });
 
 export const loginSchema = Joi.object<LoginInput>({
   email,
