@@ -3,11 +3,13 @@ import { useLiveData } from '../../context/LiveDataContext';
 import { Snackbar } from '../common';
 
 const VISIBLE_MS = 3000;
+const MERGE_WINDOW_MS = 1000;
 
 interface Toast {
   // A fresh id per update remounts the Snackbar, which restarts its timer. Without it a second update
   // arriving while the first is showing would inherit the remainder of the old countdown.
   id: number;
+  createdAt: number;
   message: string;
 }
 
@@ -46,9 +48,14 @@ export const LiveUpdateToast = () => {
       if (previous !== undefined && previous !== at) changed.push(message);
     });
 
-    // The bathroom sensor reports temperature and humidity in the same breath, so they are announced
-    // together rather than as two toasts that would replace one another.
-    if (changed.length > 0) setToast({ id: Date.now(), message: changed.join(' · ') });
+    if (changed.length === 0) return;
+    const now = Date.now();
+    const message = changed.join(' · ');
+    setToast((current) =>
+      current && now - current.createdAt < MERGE_WINDOW_MS
+        ? { ...current, message: `${current.message} · ${message}` }
+        : { id: now, createdAt: now, message },
+    );
   }, [temperatureAt, humidityAt, doorAt, activityAt, temperature, humidity, activity]);
 
   return (
